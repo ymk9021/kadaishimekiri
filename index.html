@@ -72,6 +72,16 @@
       margin-bottom: 5px;
     }
 
+    /* 今日 */
+    .today {
+      background: #e0e0e0;
+    }
+
+    /* 過去 */
+    .past {
+      opacity: 0.4;
+    }
+
     .task {
       background: #ffdddd;
       padding: 3px;
@@ -100,6 +110,7 @@
   <input type="date" id="date">
   <input type="text" id="task" placeholder="課題名">
   <button onclick="addTask()">追加</button>
+  <button onclick="saveTasks()">保存する</button>
 </div>
 
 <div id="calendar"></div>
@@ -125,7 +136,6 @@
 
     monthLabel.textContent = `${year}年 ${month + 1}月`;
 
-    /* 曜日ヘッダー */
     weekdays.forEach(w => {
       const wd = document.createElement("div");
       wd.className = "weekday";
@@ -140,12 +150,24 @@
       calendar.appendChild(document.createElement("div"));
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     for (let d = 1; d <= lastDate; d++) {
       const dayDiv = document.createElement("div");
       dayDiv.className = "day";
 
+      const dateObj = new Date(year, month, d);
+      dateObj.setHours(0, 0, 0, 0);
+
       const dateKey = formatDate(year, month + 1, d);
       dayDiv.innerHTML = `<strong>${d}</strong>`;
+
+      if (dateObj.getTime() === today.getTime()) {
+        dayDiv.classList.add("today");
+      } else if (dateObj < today) {
+        dayDiv.classList.add("past");
+      }
 
       if (tasks[dateKey]) {
         tasks[dateKey].forEach((taskName, index) => {
@@ -194,10 +216,13 @@
     localStorage.setItem("tasks", JSON.stringify(tasks));
 
     document.getElementById("task").value = "";
-
-    /* 入力した日付の月を表示 */
     currentDate = new Date(date);
     renderCalendar();
+  }
+
+  function saveTasks() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    alert("保存しました！");
   }
 
   renderCalendar();
