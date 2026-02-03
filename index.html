@@ -14,9 +14,27 @@
       text-align: center;
     }
 
+    #controls {
+      max-width: 700px;
+      margin: 10px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #controls button {
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+
+    #monthLabel {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
     #form {
       max-width: 700px;
-      margin: 20px auto;
+      margin: 15px auto;
       display: flex;
       gap: 10px;
     }
@@ -26,7 +44,6 @@
       font-size: 14px;
     }
 
-    /* 曜日＋日付を含めた7列 */
     #calendar {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -73,6 +90,12 @@
 
 <h1>課題締め切りカレンダー</h1>
 
+<div id="controls">
+  <button onclick="changeMonth(-1)">◀ 前の月</button>
+  <div id="monthLabel"></div>
+  <button onclick="changeMonth(1)">次の月 ▶</button>
+</div>
+
 <div id="form">
   <input type="date" id="date">
   <input type="text" id="task" placeholder="課題名">
@@ -83,13 +106,11 @@
 
 <script>
   const calendar = document.getElementById("calendar");
+  const monthLabel = document.getElementById("monthLabel");
 
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth(); // 0始まり
+  let currentDate = new Date();
 
   const tasks = JSON.parse(localStorage.getItem("tasks") || "{}");
-
   const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
 
   function formatDate(y, m, d) {
@@ -99,29 +120,32 @@
   function renderCalendar() {
     calendar.innerHTML = "";
 
-    /* 曜日ヘッダーを表示 */
-    weekdays.forEach(day => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    monthLabel.textContent = `${year}年 ${month + 1}月`;
+
+    /* 曜日ヘッダー */
+    weekdays.forEach(w => {
       const wd = document.createElement("div");
       wd.className = "weekday";
-      wd.textContent = day;
+      wd.textContent = w;
       calendar.appendChild(wd);
     });
 
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
 
-    /* 月初の空白 */
     for (let i = 0; i < firstDay; i++) {
       calendar.appendChild(document.createElement("div"));
     }
 
-    /* 日付＋課題 */
-    for (let date = 1; date <= lastDate; date++) {
+    for (let d = 1; d <= lastDate; d++) {
       const dayDiv = document.createElement("div");
       dayDiv.className = "day";
 
-      const dateKey = formatDate(year, month + 1, date);
-      dayDiv.innerHTML = `<strong>${date}</strong>`;
+      const dateKey = formatDate(year, month + 1, d);
+      dayDiv.innerHTML = `<strong>${d}</strong>`;
 
       if (tasks[dateKey]) {
         tasks[dateKey].forEach((taskName, index) => {
@@ -148,6 +172,11 @@
     }
   }
 
+  function changeMonth(diff) {
+    currentDate.setMonth(currentDate.getMonth() + diff);
+    renderCalendar();
+  }
+
   function addTask() {
     const date = document.getElementById("date").value;
     const task = document.getElementById("task").value;
@@ -165,6 +194,9 @@
     localStorage.setItem("tasks", JSON.stringify(tasks));
 
     document.getElementById("task").value = "";
+
+    /* 入力した日付の月を表示 */
+    currentDate = new Date(date);
     renderCalendar();
   }
 
@@ -173,4 +205,3 @@
 
 </body>
 </html>
-
